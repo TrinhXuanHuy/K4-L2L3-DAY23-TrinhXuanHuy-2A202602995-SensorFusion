@@ -1,0 +1,38 @@
+[
+  {
+    "level": "0. Baseline (No drift)",
+    "delta_y_m": 0.0,
+    "delta_yaw_rad": 0.0,
+    "rmse_m": 0.14302993877371004,
+    "matches": 123,
+    "mean_innovation_px": 251.58503726091266,
+    "gate_acceptance_pct": 11.655629139072849
+  },
+  {
+    "level": "1. Slight Drift (dy=0.2m, dyaw=0.02 rad)",
+    "delta_y_m": 0.2,
+    "delta_yaw_rad": 0.02,
+    "rmse_m": 0.1588320932134691,
+    "matches": 123,
+    "mean_innovation_px": 272.4094518453788,
+    "gate_acceptance_pct": 3.1125827814569536
+  },
+  {
+    "level": "2. Moderate Drift (dy=0.6m, dyaw=0.06 rad)",
+    "delta_y_m": 0.6,
+    "delta_yaw_rad": 0.06,
+    "rmse_m": 0.32201052583373324,
+    "matches": 121,
+    "mean_innovation_px": 339.77556978988014,
+    "gate_acceptance_pct": 4.0
+  },
+  {
+    "level": "3. Severe Drift (dy=1.5m, dyaw=0.15 rad)",
+    "delta_y_m": 1.5,
+    "delta_yaw_rad": 0.15,
+    "rmse_m": 0.133695318407903,
+    "matches": 123,
+    "mean_innovation_px": 345.11028625272553,
+    "gate_acceptance_pct": 6.12691466083151
+  }
+]

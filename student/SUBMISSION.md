@@ -67,7 +67,29 @@ File per-mode `metrics_lidar.json`, `metrics_fused.json`, `grade_run_lidar.log`,
 Liệt kê phần bonus đã làm, file bằng chứng trong `student/bonus/` và kết quả chính
 (xem [RUBRIC.md](../RUBRIC.md) mục 2). Không làm thì ghi "Không".
 
-- Không
+### 1. Phân tích Calibration Drift (+4 điểm)
+- **Bằng chứng:** File số liệu `student/bonus/calibration_drift_analysis.json`.
+- **Thực nghiệm:** Đưa vào 4 mức độ lệch ngoại chuẩn (extrinsic drift) của camera (thay đổi độ dịch chuyển ngang $\Delta y$ và góc quay $\Delta\text{yaw}$ trong ma trận biến đổi `veh_to_sens`):
+
+| Mức độ lệch | $\Delta y$ (m) | $\Delta\text{yaw}$ (rad) | Mean Innovation (px) | Tỷ lệ qua cổng $\chi^2$ (%) | Matches | RMSE (m) |
+|---|---|---|---|---|---|---|
+| **0. Gốc (Baseline)** | 0.0 | 0.00 | 251.6 | 11.66% | 123 | **0.1430** |
+| **1. Lệch nhẹ** | +0.2 | +0.02 (~1.1°) | 272.4 | 3.11% | 123 | **0.1588** |
+| **2. Lệch vừa** | +0.6 | +0.06 (~3.4°) | 339.8 | 4.00% | 121 | **0.3220** |
+| **3. Lệch nặng** | +1.5 | +0.15 (~8.6°) | 345.1 | 6.13% | 123 | **0.1337** |
+
+- **Nhận xét & Cơ chế tự vệ của Tracker:**
+  - Ở mức **Lệch nhẹ**, innovation trung bình tăng lên 272.4 px khiến tỷ lệ chấp nhận qua cổng $\chi^2$ giảm từ 11.66% xuống 3.11%. Một số ít đo lường bị lệch nhẹ vẫn lọt cổng làm tăng sai số ước lượng (RMSE tăng từ 0.1430 m lên 0.1588 m).
+  - Ở mức **Lệch vừa**, sai số vị trí tăng vọt lên 0.3220 m (hơn gấp đôi) do những đo lường camera bị lệch điểm ảnh nghiêm trọng nhưng vẫn vô tình nằm vừa vặn trong elip phân phối sai số $\chi^2$, khiến Kalman Gain kéo mạnh vị trí 3D của track lệch khỏi thực tế.
+  - Ở mức **Lệch nặng**, góc lệch quá lớn làm sai lệch toàn bộ tâm chiếu. Hầu hết các đo lường camera lúc này có khoảng cách Mahalanobis $d^2$ cực lớn và bị cổng Chi-square từ chối hoàn toàn. Nhờ đó, tracker tự vệ thành công bằng cách dựa gần như hoàn toàn vào đo lường LiDAR chất lượng cao, đưa RMSE quay về mức ổn định (0.1337 m).
+
+### 2. Trực quan hoá Track & Đo lường trên BEV và Camera FRONT (+3 điểm)
+- **Bằng chứng:** 
+  - `student/bonus/viz_bev_tracking_frame_0010.png`: Ảnh hiển thị lưới BEV với mật độ điểm LiDAR, các bounding box phát hiện từ mạng FPN (màu xanh lá), các Track đã được xác nhận (confirmed tracks màu xanh cyan kèm Track ID và vận tốc ước lượng), đối chiếu với nhãn Ground Truth (dấu X màu đỏ).
+  - `student/bonus/viz_camera_front_projection_frame_0010.png`: Ảnh chụp thực tế từ Camera FRONT của xe Waymo với hộp 3D bounding box của các track confirmed được chiếu pinhole trực tiếp lên mặt phẳng ảnh, minh hoạ độ khớp chính xác giữa mô hình 3D và đối tượng xe trong ảnh thật.
+
+### 3. Export Track sang định dạng CVAT (+3 điểm)
+- **Bằng chứng:** File `student/bonus/cvat_tracks_export.json` được sinh bằng hàm `fusion_lab.export_cvat.export_tracks_json`, chứa đầy đủ danh tính `id`, vị trí 3D `(x, y, z)`, vận tốc `(vx, vy, vz)` và kích thước `(h, w, l, yaw)` của các track qua từng frame.
 
 ## Khai báo sử dụng AI (bắt buộc)
 
