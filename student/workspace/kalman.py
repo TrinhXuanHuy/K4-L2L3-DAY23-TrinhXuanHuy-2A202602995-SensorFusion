@@ -11,9 +11,9 @@ from typing import Optional
 
 import numpy as np
 
-Matrix = np.matrix | np.ndarray
+from fusion_lab.workspace_support import get_tracking_params
 
-# vi: Gợi ý module — params = get_tracking_params() sau khi import ở trên.
+Matrix = np.matrix | np.ndarray
 
 
 def build_F(dt: Optional[float] = None) -> Matrix:
@@ -25,9 +25,14 @@ def build_F(dt: Optional[float] = None) -> Matrix:
     Returns:
         6x6 state transition matrix as ``np.matrix``.
     """
-    # vi: TODO Part E — Nếu dt is None, lấy params.dt từ get_tracking_params().
-    # vi: F = I_6; gán F[0,3]=F[1,4]=F[2,5]=dt (vị trí += v * dt).
-    raise NotImplementedError("TODO: implement build_F")
+    if dt is None:
+        params = get_tracking_params()
+        dt = float(params.dt)
+    F = np.asmatrix(np.eye(6, dtype=float))
+    F[0, 3] = dt
+    F[1, 4] = dt
+    F[2, 5] = dt
+    return F
 
 
 def build_Q(dt: Optional[float] = None, q: Optional[float] = None) -> Matrix:
@@ -40,8 +45,13 @@ def build_Q(dt: Optional[float] = None, q: Optional[float] = None) -> Matrix:
     Returns:
         6x6 process noise matrix.
     """
-    # vi: TODO Part E — Q đường chéo: q_diag = dt * q trên 6 trục (mô hình lab).
-    raise NotImplementedError("TODO: implement build_Q")
+    params = get_tracking_params()
+    if dt is None:
+        dt = float(params.dt)
+    if q is None:
+        q = float(params.q)
+    q_diag = dt * q
+    return np.asmatrix(np.diag([q_diag] * 6))
 
 
 def ekf_predict(
@@ -61,8 +71,15 @@ def ekf_predict(
     Returns:
         Tuple ``(x_pred, P_pred)``.
     """
-    # vi: TODO Part E — x_pred = F @ x; P_pred = F @ P @ F.T + Q (dùng ma trận np).
-    raise NotImplementedError("TODO: implement ekf_predict")
+    if F is None:
+        F = build_F()
+    if Q is None:
+        Q = build_Q()
+    x_mat = np.asmatrix(x)
+    P_mat = np.asmatrix(P)
+    x_pred = F @ x_mat
+    P_pred = F @ P_mat @ F.T + Q
+    return x_pred, P_pred
 
 
 def innovation(x: Matrix, meas: Any) -> Matrix:
@@ -75,8 +92,7 @@ def innovation(x: Matrix, meas: Any) -> Matrix:
     Returns:
         Innovation vector ``z - h(x)``.
     """
-    # vi: TODO Part E — return meas.z - meas.sensor.get_hx(x).
-    raise NotImplementedError("TODO: implement innovation")
+    return np.asmatrix(meas.z) - np.asmatrix(meas.sensor.get_hx(x))
 
 
 def innovation_covariance(P: Matrix, meas: Any, H: Matrix) -> Matrix:
@@ -90,8 +106,10 @@ def innovation_covariance(P: Matrix, meas: Any, H: Matrix) -> Matrix:
     Returns:
         Innovation covariance matrix S.
     """
-    # vi: TODO Part E — S = H @ P @ H.T + meas.R (dùng @ với cả ndarray/matrix).
-    raise NotImplementedError("TODO: implement innovation_covariance")
+    P_mat = np.asmatrix(P)
+    H_mat = np.asmatrix(H)
+    R_mat = np.asmatrix(meas.R)
+    return H_mat @ P_mat @ H_mat.T + R_mat
 
 
 def ekf_update(x: Matrix, P: Matrix, meas: Any) -> tuple[Matrix, Matrix]:
@@ -105,6 +123,13 @@ def ekf_update(x: Matrix, P: Matrix, meas: Any) -> tuple[Matrix, Matrix]:
     Returns:
         Tuple ``(x_upd, P_upd)``.
     """
-    # vi: TODO Part E — H = meas.sensor.get_H(x); gamma, S; K = P H' S^{-1};
-    # vi: x_upd = x + K gamma; P_upd = (I - K H) P.
-    raise NotImplementedError("TODO: implement ekf_update")
+    x_mat = np.asmatrix(x)
+    P_mat = np.asmatrix(P)
+    H = meas.sensor.get_H(x_mat)
+    gamma = innovation(x_mat, meas)
+    S = innovation_covariance(P_mat, meas, H)
+    K = P_mat @ H.T @ np.linalg.inv(S)
+    x_upd = x_mat + K @ gamma
+    I = np.asmatrix(np.eye(P_mat.shape[0]))
+    P_upd = (I - K @ H) @ P_mat
+    return x_upd, P_upd
