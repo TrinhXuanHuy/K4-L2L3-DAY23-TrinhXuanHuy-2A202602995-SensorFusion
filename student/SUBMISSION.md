@@ -4,10 +4,10 @@
 
 ## Thông tin học viên
 
-- Họ tên:
-- MSSV:
+- Họ tên: Trịnh Xuân Huy
+- MSSV: 2A202602995
 - Email:
-- Link repo (fork):
+- Link repo (fork): https://github.com/TrinhXuanHuy/K4-L2L3-DAY23-TrinhXuanHuy-2A202602995-SensorFusion
 - Commit hash nộp (`git rev-parse HEAD`):
 
 ## Tóm tắt kết quả

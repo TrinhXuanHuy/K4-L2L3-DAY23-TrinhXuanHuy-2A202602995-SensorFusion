@@ -3,6 +3,8 @@
 import os
 from pathlib import Path
 
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+
 import pytest
 
 
